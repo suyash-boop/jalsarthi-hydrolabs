@@ -10,6 +10,7 @@ import {
   type WaterSourceData,
   type AIPlan,
 } from "@/lib/ai-optimizer";
+import { sendWhatsAppMessage, buildDispatchMessage } from "@/lib/whatsapp";
 
 export async function POST(request: Request) {
   const auth = await requireAuth(["ADMIN"]);
@@ -167,6 +168,21 @@ async function handleApply(request: Request, userId: string) {
       where: { id: assignment.tankerId },
       data: { status: "dispatched" },
     });
+
+    // Send WhatsApp notification to driver (fire-and-forget)
+    if (tanker.driverPhone) {
+      const msg = buildDispatchMessage({
+        villageName: village.name,
+        priority: assignment.priority,
+        tankerReg: tanker.registrationNo,
+        tripsAssigned: village.tankerDemand || 1,
+        villageLat: village.lat,
+        villageLng: village.lng,
+      });
+      sendWhatsAppMessage(tanker.driverPhone, msg).catch((err) =>
+        console.error("WhatsApp notification failed:", err)
+      );
+    }
 
     created.push(dispatch);
   }

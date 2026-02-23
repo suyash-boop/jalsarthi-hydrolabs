@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAuth, isAuthError } from "@/lib/auth-helpers";
+import { sendWhatsAppMessage, buildDispatchMessage } from "@/lib/whatsapp";
 
 export async function GET(request: Request) {
   const auth = await requireAuth();
@@ -121,6 +122,23 @@ export async function POST(request: Request) {
       where: { id: body.tankerId },
       data: { status: "dispatched" },
     });
+
+    // Send WhatsApp notification to driver (fire-and-forget)
+    if (tanker.driverPhone) {
+      const msg = buildDispatchMessage({
+        villageName: village.name,
+        priority,
+        tankerReg: tanker.registrationNo,
+        tripsAssigned: body.tripsAssigned || village.tankerDemand || 1,
+        villageLat: village.lat,
+        villageLng: village.lng,
+        sourceLat: sourceData.sourceLat ?? null,
+        sourceLng: sourceData.sourceLng ?? null,
+      });
+      sendWhatsAppMessage(tanker.driverPhone, msg).catch((err) =>
+        console.error("WhatsApp notification failed:", err)
+      );
+    }
 
     return NextResponse.json(dispatch, { status: 201 });
   } catch (error) {

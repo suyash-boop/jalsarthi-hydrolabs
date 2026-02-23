@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAuth, isAuthError } from "@/lib/auth-helpers";
-import { fetchRecentRainfall } from "@/lib/weather";
+import { fetchRecentRainfall, fetchHistoricalRainfall } from "@/lib/weather";
 import { calculateWaterStress } from "@/lib/stress-algorithm";
 
 export async function POST() {
@@ -15,14 +15,27 @@ export async function POST() {
       name: string;
       oldScore: number;
       newScore: number;
+      newDeviation: number;
       newTankerDemand: number;
     }> = [];
 
     for (const village of villages) {
       try {
-        // Fetch live rainfall
+        // Fetch live rainfall (last 30 days)
         const rainfall = await fetchRecentRainfall(village.lat, village.lng);
         const totalRainfall = rainfall.rainMm.reduce((sum, r) => sum + r, 0);
+
+        // Fetch historical rainfall for the same 30-day window last year
+        let historicalBaseline: number;
+        try {
+          historicalBaseline = await fetchHistoricalRainfall(
+            village.lat,
+            village.lng
+          );
+        } catch {
+          // Fallback to stored average if archive API fails
+          historicalBaseline = village.historicalAvgRainfall;
+        }
 
         // Store weather records
         for (let i = 0; i < rainfall.dates.length; i++) {
@@ -43,10 +56,10 @@ export async function POST() {
           });
         }
 
-        // Recalculate stress
+        // Recalculate stress using same-period historical baseline
         const stress = calculateWaterStress({
           recentRainfallMm: totalRainfall,
-          historicalAvgRainfallMm: village.historicalAvgRainfall,
+          historicalAvgRainfallMm: historicalBaseline,
           groundwaterLevel: village.groundwaterLevel,
           population: village.population,
         });
@@ -66,6 +79,7 @@ export async function POST() {
           name: village.name,
           oldScore: village.stressScore,
           newScore: stress.stressScore,
+          newDeviation: stress.rainfallDeviation,
           newTankerDemand: stress.tankerDemand,
         });
       } catch {

@@ -7,7 +7,36 @@ import { Progress } from "@/components/ui/progress";
 import { DispatchStatusBadge } from "./dispatch-status-badge";
 import { PriorityBadge } from "./priority-badge";
 import type { Dispatch, DispatchStatus } from "@/lib/types";
-import { MapPin, Truck } from "lucide-react";
+import { MapPin, Truck, MessageCircle } from "lucide-react";
+
+function buildWhatsAppLink(dispatch: Dispatch): string | null {
+  const phone = dispatch.tanker?.driverPhone;
+  if (!phone) return null;
+
+  // Normalize Indian phone: strip +, ensure 91 prefix
+  const cleaned = phone.replace(/[\s\-\+]/g, "");
+  const intlPhone = cleaned.startsWith("91") ? cleaned : `91${cleaned}`;
+
+  // Google Maps navigation link
+  const mapsLink = dispatch.sourceLat && dispatch.sourceLng
+    ? `https://www.google.com/maps/dir/${dispatch.sourceLat},${dispatch.sourceLng}/${dispatch.villageLat},${dispatch.villageLng}`
+    : `https://www.google.com/maps/search/${dispatch.villageLat},${dispatch.villageLng}`;
+
+  const message = [
+    `*JalSarthi Dispatch Alert*`,
+    ``,
+    `Village: *${dispatch.villageName}*`,
+    `Priority: *${dispatch.priority.toUpperCase()}*`,
+    `Tanker: ${dispatch.tanker?.registrationNo || "N/A"}`,
+    `Trips Assigned: ${dispatch.tripsAssigned}`,
+    ``,
+    `Navigate: ${mapsLink}`,
+    ``,
+    `Please proceed to the village immediately. Contact control room for updates.`,
+  ].join("\n");
+
+  return `https://wa.me/${intlPhone}?text=${encodeURIComponent(message)}`;
+}
 
 interface DispatchPanelProps {
   dispatches: Dispatch[];
@@ -57,6 +86,7 @@ export function DispatchPanel({ dispatches, onSelect }: DispatchPanelProps) {
               dispatch.tripsAssigned > 0
                 ? (dispatch.tripsCompleted / dispatch.tripsAssigned) * 100
                 : 0;
+            const waLink = buildWhatsAppLink(dispatch);
             return (
               <Card
                 key={dispatch.id}
@@ -79,9 +109,23 @@ export function DispatchPanel({ dispatches, onSelect }: DispatchPanelProps) {
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <DispatchStatusBadge status={dispatch.status} />
-                      <PriorityBadge priority={dispatch.priority} />
+                    <div className="flex items-center gap-1.5">
+                      {waLink && !["completed", "cancelled"].includes(dispatch.status) && (
+                        <a
+                          href={waLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center justify-center h-7 w-7 rounded-md bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+                          title="Notify driver via WhatsApp"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+                      <div className="flex flex-col items-end gap-1">
+                        <DispatchStatusBadge status={dispatch.status} />
+                        <PriorityBadge priority={dispatch.priority} />
+                      </div>
                     </div>
                   </div>
                   <div className="mt-2">

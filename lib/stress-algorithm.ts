@@ -29,7 +29,7 @@ export function calculateWaterStress(input: StressInput): StressOutput {
     population,
   } = input;
 
-  // Rainfall deviation
+  // Rainfall deviation (compare recent vs same-period historical)
   let rainfallDeviation = 0;
   if (historicalAvgRainfallMm > 0) {
     rainfallDeviation =
@@ -37,6 +37,8 @@ export function calculateWaterStress(input: StressInput): StressOutput {
         historicalAvgRainfallMm) *
       100;
   }
+  // Both are ~0 during dry season — no meaningful deviation
+  // (avoids -100% when comparing 0mm against a tiny historical value)
   const rainfallScore = clamp((-rainfallDeviation / 60) * 100, 0, 100);
 
   // Groundwater depth (deeper = worse)

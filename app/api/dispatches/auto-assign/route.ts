@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAuth, isAuthError } from "@/lib/auth-helpers";
 import { recommendTankers } from "@/lib/tanker-allocation";
+import { sendWhatsAppMessage, buildDispatchMessage } from "@/lib/whatsapp";
 import type { Tanker } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -101,6 +102,21 @@ export async function POST(request: Request) {
         where: { id: best.tankerId },
         data: { status: "dispatched" },
       });
+
+      // Send WhatsApp notification to driver (fire-and-forget)
+      if (dispatch.tanker?.driverPhone) {
+        const msg = buildDispatchMessage({
+          villageName: village.name,
+          priority,
+          tankerReg: dispatch.tanker.registrationNo,
+          tripsAssigned: village.tankerDemand || 1,
+          villageLat: village.lat,
+          villageLng: village.lng,
+        });
+        sendWhatsAppMessage(dispatch.tanker.driverPhone, msg).catch((err) =>
+          console.error("WhatsApp notification failed:", err)
+        );
+      }
 
       usedTankerIds.add(best.tankerId);
       created.push(dispatch);
