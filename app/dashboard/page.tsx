@@ -15,7 +15,7 @@ import type { Village, Dispatch } from "@/lib/types";
 
 const SIDEBAR_WIDTHS = {
   villages: "22rem",
-  tankers: "22rem",
+  tankers: "25rem",
 } as const;
 
 export default function DashboardPage() {
