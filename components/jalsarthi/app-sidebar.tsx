@@ -26,11 +26,12 @@ import { TankerFleetPanel } from "./tanker-fleet-panel";
 import { DispatchPanel } from "./dispatch-panel";
 import { DispatchCreateDialog } from "./dispatch-create-dialog";
 import { AutoAssignDialog } from "./auto-assign-dialog";
+import { AIOptimizerDialog } from "./ai-optimizer-dialog";
 import { RoleGuard } from "./role-guard";
 import { computeOverallStats } from "@/lib/stats";
 import { getStressLevel } from "@/lib/types";
 import type { Village, StressLevel, Tanker, Dispatch } from "@/lib/types";
-import { Search, BarChart3, List, Plus, Zap, LogOut } from "lucide-react";
+import { Search, BarChart3, List, Plus, Zap, Brain, LogOut } from "lucide-react";
 
 type SidebarMode = "villages" | "tankers";
 type VillageView = "list" | "charts";
@@ -66,6 +67,7 @@ export function AppSidebar({
   const [tankerSubView, setTankerSubView] = useState<TankerSubView>("fleet");
   const [dispatchCreateOpen, setDispatchCreateOpen] = useState(false);
   const [autoAssignOpen, setAutoAssignOpen] = useState(false);
+  const [aiOptimizerOpen, setAiOptimizerOpen] = useState(false);
 
   const { data: session } = useSession();
 
@@ -304,6 +306,17 @@ export function AppSidebar({
                       Auto
                     </Button>
                   </RoleGuard>
+                  <RoleGuard allowedRoles={["ADMIN"]}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      onClick={() => setAiOptimizerOpen(true)}
+                    >
+                      <Brain className="h-3 w-3 mr-1" />
+                      AI
+                    </Button>
+                  </RoleGuard>
                 </div>
 
                 {tankerSubView === "fleet" ? (
@@ -327,6 +340,11 @@ export function AppSidebar({
                 <AutoAssignDialog
                   open={autoAssignOpen}
                   onClose={() => setAutoAssignOpen(false)}
+                  onSuccess={handleRefetchAll}
+                />
+                <AIOptimizerDialog
+                  open={aiOptimizerOpen}
+                  onClose={() => setAiOptimizerOpen(false)}
                   onSuccess={handleRefetchAll}
                 />
               </SidebarGroupContent>

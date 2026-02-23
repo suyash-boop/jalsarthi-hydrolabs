@@ -415,67 +415,69 @@ export function MaharashtraMap({
       </div>
 
       {/* Map Legend */}
-      <div className="absolute bottom-8 left-4 bg-black/70 backdrop-blur-md border border-white/10 rounded-lg p-3 z-10 text-xs space-y-1.5">
-        <p className="font-semibold text-white/90 mb-1 flex items-center gap-1.5">
+      <div className={`absolute bottom-8 left-4 backdrop-blur-md border rounded-lg p-3 z-10 text-xs space-y-1.5 transition-colors ${
+        isDark ? "bg-black/70 border-white/10" : "bg-white/80 border-black/10"
+      }`}>
+        <p className={`font-semibold mb-1 flex items-center gap-1.5 ${isDark ? "text-white/90" : "text-black/90"}`}>
           <Layers className="h-3.5 w-3.5" />
           Legend
         </p>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-[#22c55e] shadow-[0_0_6px_rgba(34,197,94,0.6)]" />
-          <span className="text-white/60">Safe (&lt; 50)</span>
+          <span className={isDark ? "text-white/60" : "text-black/60"}>Safe (&lt; 50)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-[#eab308] shadow-[0_0_6px_rgba(234,179,8,0.6)]" />
-          <span className="text-white/60">Warning (50-75)</span>
+          <span className={isDark ? "text-white/60" : "text-black/60"}>Warning (50-75)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-[#ef4444] shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
-          <span className="text-white/60">Critical (&gt; 75)</span>
+          <span className={isDark ? "text-white/60" : "text-black/60"}>Critical (&gt; 75)</span>
         </div>
         {waterSources.length > 0 && (
           <>
-            <div className="border-t border-white/10 pt-1.5 mt-1.5">
-              <p className="font-semibold text-white/90 mb-1">Water Sources</p>
+            <div className={`border-t pt-1.5 mt-1.5 ${isDark ? "border-white/10" : "border-black/10"}`}>
+              <p className={`font-semibold mb-1 ${isDark ? "text-white/90" : "text-black/90"}`}>Water Sources</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rotate-45 bg-[#3b82f6] shadow-[0_0_6px_rgba(59,130,246,0.5)]" />
-              <span className="text-white/60">Dam / Reservoir</span>
+              <span className={isDark ? "text-white/60" : "text-black/60"}>Dam / Reservoir</span>
             </div>
           </>
         )}
         {tankers.length > 0 && (
           <>
-            <div className="border-t border-white/10 pt-1.5 mt-1.5">
-              <p className="font-semibold text-white/90 mb-1">Tankers</p>
+            <div className={`border-t pt-1.5 mt-1.5 ${isDark ? "border-white/10" : "border-black/10"}`}>
+              <p className={`font-semibold mb-1 ${isDark ? "text-white/90" : "text-black/90"}`}>Tankers</p>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-3 h-3 bg-[#22c55e] shadow-[0_0_6px_rgba(34,197,94,0.5)]"
                 style={{ clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" }}
               />
-              <span className="text-white/60">Available</span>
+              <span className={isDark ? "text-white/60" : "text-black/60"}>Available</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-3 h-3 bg-[#3b82f6] shadow-[0_0_6px_rgba(59,130,246,0.5)]"
                 style={{ clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" }}
               />
-              <span className="text-white/60">Dispatched</span>
+              <span className={isDark ? "text-white/60" : "text-black/60"}>Dispatched</span>
             </div>
           </>
         )}
         {activeDispatches.length > 0 && (
           <>
-            <div className="border-t border-white/10 pt-1.5 mt-1.5">
-              <p className="font-semibold text-white/90 mb-1">Routes</p>
+            <div className={`border-t pt-1.5 mt-1.5 ${isDark ? "border-white/10" : "border-black/10"}`}>
+              <p className={`font-semibold mb-1 ${isDark ? "text-white/90" : "text-black/90"}`}>Routes</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-0.5 bg-[#ef4444] shadow-[0_0_4px_rgba(239,68,68,0.5)]" />
-              <span className="text-white/60">Urgent</span>
+              <span className={isDark ? "text-white/60" : "text-black/60"}>Urgent</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-0.5 bg-[#60a5fa] shadow-[0_0_4px_rgba(96,165,250,0.5)]" />
-              <span className="text-white/60">Normal</span>
+              <span className={isDark ? "text-white/60" : "text-black/60"}>Normal</span>
             </div>
           </>
         )}

@@ -8,6 +8,8 @@ export async function POST(request: Request) {
   const auth = await requireAuth(["ADMIN"]);
   if (isAuthError(auth)) return auth;
 
+  const userId = (auth.user as { id?: string }).id || "000000000000000000000000";
+
   try {
     const body = await request.json();
     const minStressScore = body.minStressScore ?? 70;
@@ -90,7 +92,7 @@ export async function POST(request: Request) {
           status: "pending",
           priority: priority as "urgent" | "high" | "medium",
           tripsAssigned: village.tankerDemand || 1,
-          createdBy: "auto-assign",
+          createdBy: userId,
         },
         include: { tanker: true },
       });
