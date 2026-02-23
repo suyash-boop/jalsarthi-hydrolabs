@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Auth.js (NextAuth v5) Models
+// ──────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(ADMIN)
+  accounts      Account[]
+  sessions      Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// ──────────────────────────────────────────────
+// Domain Models
+// ──────────────────────────────────────────────
+
+model Village {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  villageCode          String   @unique
+  name                 String
+  district             String
+  taluka               String
+  lat                  Float
+  lng                  Float
+  population           Int
+  stressScore          Float    @default(0)
+  rainfallDeviation    Float    @default(0)
+  groundwaterLevel     Float    @default(0)
+  tankerDemand         Int      @default(0)
+  historicalAvgRainfall Float   @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  weatherRecords WeatherRecord[]
+}
+
+model WaterSource {
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
+  sourceCode   String          @unique
+  name         String
+  type         WaterSourceType
+  lat          Float
+  lng          Float
+  capacity     Float
+  currentLevel Float
+  district     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum WaterSourceType {
+  dam
+  reservoir
+  borewell
+  river
+}
+
+model WeatherRecord {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  villageId String   @db.ObjectId
+  village   Village  @relation(fields: [villageId], references: [id])
+  date      DateTime
+  rainMm    Float
+  fetchedAt DateTime @default(now())
+
+  @@unique([villageId, date])
+  @@index([villageId])
+}
+
+// ──────────────────────────────────────────────
+// Tanker Management
+// ──────────────────────────────────────────────
+
+model Tanker {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  registrationNo String       @unique
+  driverName     String
+  driverPhone    String?
+  capacity       Int
+  depotLocation  String
+  depotLat       Float
+  depotLng       Float
+  status         TankerStatus @default(available)
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  dispatches Dispatch[]
+}
+
+enum TankerStatus {
+  available
+  dispatched
+  in_transit
+  delivering
+  maintenance
+  offline
+}
+
+model Dispatch {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  tankerId    String @db.ObjectId
+  tanker      Tanker @relation(fields: [tankerId], references: [id])
+  villageId   String
+  villageName String
+  villageLat  Float
+  villageLng  Float
+
+  waterSourceId  String? @db.ObjectId
+  sourceLocation String?
+  sourceLat      Float?
+  sourceLng      Float?
+
+  status   DispatchStatus @default(pending)
+  priority PriorityLevel  @default(medium)
+
+  tripsAssigned  Int @default(1)
+  tripsCompleted Int @default(0)
+
+  scheduledFor DateTime?
+  dispatchedAt DateTime?
+  arrivedAt    DateTime?
+  completedAt  DateTime?
+
+  createdBy String @db.ObjectId
+  notes     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tankerId])
+  @@index([status])
+  @@index([priority])
+}
+
+enum DispatchStatus {
+  pending
+  assigned
+  in_transit
+  delivering
+  completed
+  cancelled
+}
+
+enum PriorityLevel {
+  low
+  medium
+  high
+  urgent
+}

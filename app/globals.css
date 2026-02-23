@@ -196,21 +196,46 @@
   }
 }
 
-/* Mapbox GL popup overrides to match JalSarthi theme */
+/* Marker pulse animation for critical villages */
+@keyframes marker-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+.marker-pulse-ring {
+  animation: marker-pulse 2s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Mapbox GL popup overrides to match dark theme */
 .mapboxgl-popup-content {
-  background: var(--card) !important;
-  color: var(--card-foreground) !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #e2e8f0 !important;
   border-radius: var(--radius) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
   padding: 0 !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .mapboxgl-popup-tip {
-  border-top-color: var(--card) !important;
+  border-top-color: rgba(15, 23, 42, 0.95) !important;
 }
 
 .mapboxgl-popup-close-button {
-  color: var(--muted-foreground) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
   font-size: 1.25rem !important;
   padding: 0.25rem 0.5rem !important;
+}
+.mapboxgl-popup-close-button:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Space_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthSessionProvider } from "@/components/providers/session-provider";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -31,7 +32,9 @@ export default function RootLayout({
       <body
         className={`${dmSans.variable} ${spaceMono.variable} antialiased`}
       >
-        <TooltipProvider>{children}</TooltipProvider>
+        <AuthSessionProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );
